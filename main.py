@@ -1,3 +1,4 @@
+import math
 from tkinter import *
 
 # -- CONSTANTS --------------------------------- #
@@ -11,9 +12,27 @@ SHORT_BREAK_MIN = 1
 LONG_BREAK_MIN = 20
 
 reps = 0
+stars = " "
+timer = None
 
 
 # -- TIMER RESET ------------------------------- #
+def reset_timer():
+    global reps
+    global stars
+
+    reps = 0
+    stars = " "
+
+    # stop the timer
+    win.after_cancel(timer)
+
+    # change title
+    title_lbl.config(text="timer", fg=GREEN)
+
+    # zero config
+    canvas.itemconfig(timer_text, text="00:00")
+
 
 # -- TIMER MECHANISM --------------------------- #
 def start_timer():
@@ -25,19 +44,17 @@ def start_timer():
     long_break = LONG_BREAK_MIN * 60
 
     if reps % 8 == 0:
-        title_lbl.config(text="long break",fg=RED)
+        title_lbl.config(text="break", fg=RED)
         count_down(long_break)
     elif reps % 2 == 0:
-        title_lbl.config(text="short break",fg=PINK)
+        title_lbl.config(text="break", fg=PINK)
         count_down(short_break)
     else:
-        title_lbl.config(text="work time",fg=GREEN)
+        title_lbl.config(text="work", fg=GREEN)
         count_down(work_time)
 
 
-
 # -- UI SETUP ---------------------------------- #
-
 win = Tk()
 win.title("pomodoro timer")
 win.config(padx=100, pady=50, bg=YELLOW)
@@ -96,7 +113,8 @@ reset_but = Button(
     bg=YELLOW,
     fg=GREEN,
     font=(FONT_NAME, 20, "bold"),
-    highlightthickness=0
+    highlightthickness=0,
+    command=reset_timer
 )
 
 reset_but.grid(column=2, row=2)
@@ -114,9 +132,10 @@ check_marks.grid(column=1, row=3)
 
 # -- COUNTDOWN MECHANISM ----------------------- #
 def count_down(count):
-    stars = ""
+    global stars
+    global timer
 
-    count_min = count / 60
+    count_min = math.floor(count / 60)
     count_sec = count % 60
 
     formatted_count = f"{count_min:02.0f}:{count_sec:02.0f}"
@@ -124,11 +143,11 @@ def count_down(count):
     canvas.itemconfig(timer_text, text=formatted_count)
 
     if count > 0:
-        win.after(1000, count_down, count - 1)
+        timer = win.after(1000, count_down, count - 1)
     else:
         if reps % 2 == 0:
-            stars += "o "
-            reset_but.config(text=stars)
+            stars += "✔︎ "
+            check_marks.config(text=stars)
         start_timer()
 
 
